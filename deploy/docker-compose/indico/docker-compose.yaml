@@ -12,10 +12,6 @@ services:
     container_name: indico-postgres
     env_file:
       - indico.env
-    environment:
-      POSTGRES_USER: indico
-      POSTGRES_PASSWORD: indicopass
-      POSTGRES_DB: indico
     volumes:
       - /srv/indico/postgres:/var/lib/postgresql/data
     restart: unless-stopped
@@ -28,12 +24,6 @@ services:
       - indico-postgres
     env_file:
       - indico.env
-    environment:
-      POSTGRES_HOST: indico-postgres
-      POSTGRES_DB: indico
-      POSTGRES_USER: indico
-      POSTGRES_PASSWORD: indicopass
-      REDIS_HOST: indico-redis
     volumes:
       - /srv/indico/archive:/opt/indico/archive
       - /srv/indico/custom:/opt/indico/custom
@@ -52,12 +42,6 @@ services:
       - indico-postgres
     env_file:
       - indico.env
-    environment:
-      POSTGRES_HOST: indico-postgres
-      POSTGRES_DB: indico
-      POSTGRES_USER: indico
-      POSTGRES_PASSWORD: indicopass
-      REDIS_HOST: indico-redis
     volumes_from:
       - indico-web
     command: ["/opt/indico/run_celery.sh"]
@@ -66,11 +50,6 @@ services:
   indico-nginx:
     image: nginx:1.27.0
     container_name: indico-nginx
-    # environment:
-    #   - VIRTUAL_PORT=80
-    #   - VIRTUAL_HOST=indico.ai4energy.org
-    #   - LETSENCRYPT_HOST=indico.ai4energy.org
-    #   - LETSENCRYPT_EMAIL=mingtaoli@ai4energy.org
     volumes:
       - /srv/indico/nginx.conf.d:/etc/nginx/conf.d
     volumes_from:
