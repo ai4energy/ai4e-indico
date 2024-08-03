@@ -20,8 +20,8 @@ if [ $? -eq 1 ]; then
         echo 'CREATE EXTENSION pg_trgm;' | psql
     else
         echo 'Using PostgreSQL container...'
-        echo 'CREATE EXTENSION unaccent;' | psql -U indico
-        echo 'CREATE EXTENSION pg_trgm;' | psql -U indico
+        echo 'CREATE EXTENSION unaccent;' | psql -U $PGUSER
+        echo 'CREATE EXTENSION pg_trgm;' | psql -U $PGUSER
     fi
     indico db prepare
 fi
