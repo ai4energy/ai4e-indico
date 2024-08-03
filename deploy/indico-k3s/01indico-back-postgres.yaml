@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indico-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: indico-postgres
+  template:
+    metadata:
+      labels:
+        app: indico-postgres
+    spec:
+      containers:
+      - name: indico-postgres
+        image: postgres:16.3
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "indico"
+        - name: POSTGRES_PASSWORD
+          value: "indicopass"
+        - name: POSTGRES_DB
+          value: "indico"
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-data
+      volumes:
+      - name: postgres-data
+        hostPath:
+          path: /srv/indico/postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: indico-postgres
+spec:
+  selector:
+    app: indico-postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+  type: ClusterIP

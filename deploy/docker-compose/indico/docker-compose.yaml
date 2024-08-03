@@ -1,0 +1,90 @@
+services:
+
+  indico-redis:
+    image: redis:7.4.0
+    container_name: indico-redis
+    volumes:
+      - /srv/indico/redis:/data
+    restart: unless-stopped
+
+  indico-postgres:
+    image: postgres:16.3
+    container_name: indico-postgres
+    env_file:
+      - indico.env
+    environment:
+      POSTGRES_USER: indico
+      POSTGRES_PASSWORD: indicopass
+      POSTGRES_DB: indico
+    volumes:
+      - /srv/indico/postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  indico-web:
+    image: indico-worker:3.3.3
+    container_name: indico-web
+    depends_on:
+      - indico-redis
+      - indico-postgres
+    env_file:
+      - indico.env
+    environment:
+      POSTGRES_HOST: indico-postgres
+      POSTGRES_DB: indico
+      POSTGRES_USER: indico
+      POSTGRES_PASSWORD: indicopass
+      REDIS_HOST: indico-redis
+    volumes:
+      - archive:/opt/indico/archive
+      - static-files:/opt/indico/static
+      - customization:/opt/indico/custom
+      - '/srv/indico/log/nginx:/opt/indico/log/nginx'
+    tmpfs:
+      - /opt/indico/tmp
+    command: ["/opt/indico/run_indico.sh"]
+    restart: unless-stopped
+
+  indico-celery:
+    image: indico-worker:3.3.3
+    container_name: indico-celery
+    depends_on:
+      - indico-redis
+      - indico-postgres
+    env_file:
+      - indico.env
+    environment:
+      POSTGRES_HOST: indico-postgres
+      POSTGRES_DB: indico
+      POSTGRES_USER: indico
+      POSTGRES_PASSWORD: indicopass
+      REDIS_HOST: indico-redis
+    volumes:
+      - archive:/opt/indico/archive
+    command: ["/opt/indico/run_celery.sh"]
+    restart: unless-stopped
+
+  indico-nginx:
+    image: nginx:1.27.0
+    container_name: indico-nginx
+    # environment:
+    #   - VIRTUAL_PORT=80
+    #   - VIRTUAL_HOST=indico.ai4energy.org
+    #   - LETSENCRYPT_HOST=indico.ai4energy.org
+    #   - LETSENCRYPT_EMAIL=mingtaoli@ai4energy.org
+    volumes:
+      - /srv/indico/nginx.conf.d:/etc/nginx/conf.d
+    volumes_from:
+      - indico-web
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: ai4energyorg
+    external: true
+
+volumes:
+  archive:
+  static-files:
+  customization:

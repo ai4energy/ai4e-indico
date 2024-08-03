@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indico-front-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: indico-front-nginx
+  template:
+    metadata:
+      labels:
+        app: indico-front-nginx
+    spec:
+      containers:
+      - name: indico-front-nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /srv/indico/web/static
+          name: static-volume
+        - mountPath: /etc/nginx/conf.d/default.conf
+          subPath: nginx.conf
+          name: nginx-config
+      volumes:
+      - name: static-volume
+        persistentVolumeClaim:
+          claimName: static-pvc
+      - name: nginx-config
+        hostPath:
+          path: /path/to/nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: indico-front-nginx
+spec:
+  selector:
+    app: indico-front-nginx
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,38 @@
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /srv/nginx-proxy/conf.d:/etc/nginx/conf.d
+      - /srv/nginx-proxy/certs:/etc/nginx/certs
+      - /srv/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - /srv/nginx-proxy/html:/usr/share/nginx/html
+      
+  whoami:
+    image: jwilder/whoami
+    container_name: nginx-proxy-whoami
+    expose:
+      - "8000"
+    environment:
+      - VIRTUAL_HOST=whoami.local
+      - VIRTUAL_PORT=8000
+
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    environment:
+      - DEFAULT_EMAIL=mingtaoli@ai4energy.org
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/nginx-proxy/acme:/etc/acme.sh
+
+networks:
+  default:
+    name: ai4energyorg
+    external: true

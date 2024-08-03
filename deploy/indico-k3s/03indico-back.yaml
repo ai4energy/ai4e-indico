@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indico-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: indico-worker
+  template:
+    metadata:
+      labels:
+        app: indico-worker
+    spec:
+      containers:
+      - name: indico-web
+        image: getindico/indico:latest
+        command: ["/opt/indico/run_indico.sh"]
+        ports:
+        - containerPort: 8000
+        env:
+        - name: POSTGRES_HOST
+          value: "indico-postgres"
+        - name: POSTGRES_DB
+          value: "indico"
+        - name: POSTGRES_USER
+          value: "indico"
+        - name: POSTGRES_PASSWORD
+          value: "indicopass"
+        - name: REDIS_HOST
+          value: "indico-redis"
+        volumeMounts:
+        - mountPath: /opt/indico/archive
+          name: archive-volume
+        - mountPath: /opt/indico/log
+          name: log-volume
+        - mountPath: /opt/indico/custom
+          name: custom-volume
+        - mountPath: /opt/indico/static
+          name: static-volume
+      - name: indico-celery
+        image: getindico/indico:latest
+        command: ["/opt/indico/run_celery.sh"]
+        env:
+        - name: POSTGRES_HOST
+          value: "indico-postgres"
+        - name: POSTGRES_DB
+          value: "indico"
+        - name: POSTGRES_USER
+          value: "indico"
+        - name: POSTGRES_PASSWORD
+          value: "indicopass"
+        - name: REDIS_HOST
+          value: "indico-redis"
+        volumeMounts:
+        - mountPath: /opt/indico/archive
+          name: archive-volume
+      volumes:
+      - name: archive-volume
+        hostPath:
+          path: /srv/indico/archive
+      - name: log-volume
+        hostPath:
+          path: /srv/indico/log
+      - name: custom-volume
+        hostPath:
+          path: /srv/indico/custom
+      - name: static-volume
+        hostPath:
+          path: /srv/indico/static
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: indico
+spec:
+  selector:
+    app: indico-worker
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP
