@@ -35,10 +35,10 @@ services:
       POSTGRES_PASSWORD: indicopass
       REDIS_HOST: indico-redis
     volumes:
-      - archive:/opt/indico/archive
+      - /srv/indico/archive:/opt/indico/archive
+      - /srv/indico/custom:/opt/indico/custom
+      - /srv/indico/log/nginx:/opt/indico/log/nginx
       - static-files:/opt/indico/static
-      - customization:/opt/indico/custom
-      - '/srv/indico/log/nginx:/opt/indico/log/nginx'
     tmpfs:
       - /opt/indico/tmp
     command: ["/opt/indico/run_indico.sh"]
@@ -58,8 +58,8 @@ services:
       POSTGRES_USER: indico
       POSTGRES_PASSWORD: indicopass
       REDIS_HOST: indico-redis
-    volumes:
-      - archive:/opt/indico/archive
+    volumes_from:
+      - indico-web
     command: ["/opt/indico/run_celery.sh"]
     restart: unless-stopped
 
@@ -85,6 +85,4 @@ networks:
     external: true
 
 volumes:
-  archive:
   static-files:
-  customization:
