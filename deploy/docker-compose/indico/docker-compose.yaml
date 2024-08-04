@@ -17,7 +17,8 @@ services:
     restart: unless-stopped
 
   indico-web:
-    image: indico-worker:3.3.3
+    #image: indico-worker:3.3.3
+    image: registry.cn-hangzhou.aliyuncs.com/ai4e/indico-worker:3.3.3
     container_name: indico-web
     depends_on:
       - indico-redis
@@ -35,7 +36,8 @@ services:
     restart: unless-stopped
 
   indico-celery:
-    image: indico-worker:3.3.3
+    #image: indico-worker:3.3.3
+    image: registry.cn-hangzhou.aliyuncs.com/ai4e/indico-worker:3.3.3
     container_name: indico-celery
     depends_on:
       - indico-redis
@@ -50,17 +52,22 @@ services:
   indico-nginx:
     image: nginx:1.27.0
     container_name: indico-nginx
+    environment:
+      - VIRTUAL_PORT=80
+      - VIRTUAL_HOST=indico.ai4energy.cn
+      - LETSENCRYPT_HOST=indico.ai4energy.cn
+      - LETSENCRYPT_EMAIL=mingtao@xjtu.edu.cn
     volumes:
       - /srv/indico/nginx.conf.d:/etc/nginx/conf.d
     volumes_from:
       - indico-web
-    ports:
-      - "80:80"
+    # ports:
+    #   - "80:80"
     restart: unless-stopped
 
 networks:
   default:
-    name: ai4energyorg
+    name: ai4energynetwork
     external: true
 
 volumes:
