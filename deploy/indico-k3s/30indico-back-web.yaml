@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: indico-web
-        image: indico-worker:3.3.3
+        image: registry.cn-hangzhou.aliyuncs.com/ai4e/indico-worker:3.3.3
         command: ["/opt/indico/run_indico.sh"]
         ports:
         - containerPort: 59999
@@ -33,12 +33,12 @@ spec:
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: indico-web-secret
+              name: indico-secret
               key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: indico-web-secret
+              name: indico-secret
               key: POSTGRES_PASSWORD
         - name: REDIS_HOST
           valueFrom:
@@ -54,29 +54,26 @@ spec:
           name: custom-volume
         - mountPath: /opt/indico/static
           name: static-volume
+      imagePullSecrets:
+      - name: ai4ealiyuncs
       volumes:
       - name: archive-volume
         hostPath:
           path: /srv/indico/archive
+          type: Directory
       - name: log-volume
         hostPath:
           path: /srv/indico/log
+          type: Directory
       - name: custom-volume
         hostPath:
           path: /srv/indico/custom
+          type: Directory
       - name: static-volume
         hostPath:
           path: /srv/indico/static
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: indico-web-secret
-  namespace: indico
-type: Opaque
-data:
-  POSTGRES_USER: aW5kaWNv # base64 encoded value for "indico"
-  POSTGRES_PASSWORD: aW5kaWNvcGFzcw== # base64 encoded value for "indicopass"
+          type: Directory
+
 ---
 apiVersion: v1
 kind: Service
@@ -88,6 +85,14 @@ spec:
     app: indico-web
   ports:
   - protocol: TCP
-    port: 80
+    port: 59999
     targetPort: 59999
   type: ClusterIP
+
+# ai4ealiyuncs
+# kubectl create secret docker-registry ai4ealiyuncs \
+#   --docker-server=registry.cn-hangzhou.aliyuncs.com \
+#   --docker-username=mingtaoli \
+#   --docker-password=<your-password> \
+#   --docker-email=mingtao@xjtu.edu.cn \
+#   -n indico

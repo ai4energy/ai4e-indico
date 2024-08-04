@@ -28,7 +28,7 @@ spec:
       - name: static-volume
         hostPath:
           path: /srv/indico/web/static
-          type: DirectoryOrCreate
+          type: Directory
       - name: nginx-config
         hostPath:
           path: /path/to/nginx.conf

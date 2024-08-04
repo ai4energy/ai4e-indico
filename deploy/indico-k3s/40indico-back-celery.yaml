@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: indico-celery
-        image: indico-worker:3.3.3
+        image: registry.cn-hangzhou.aliyuncs.com/ai4e/indico-worker:3.3.3
         command: ["/opt/indico/run_celery.sh"]
         env:
         - name: POSTGRES_HOST
@@ -46,6 +46,8 @@ spec:
         volumeMounts:
         - mountPath: /opt/indico/archive
           name: archive-volume
+      imagePullSecrets:
+      - name: ai4ealiyuncs
       volumes:
       - name: archive-volume
         hostPath:

@@ -3,8 +3,8 @@ kind: Ingress
 metadata:
   name: indico-ai4energy-org-ingress-indico
   namespace: indico
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  # annotations:
+  #   cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: "nginx"
   rules:
@@ -18,7 +18,7 @@ spec:
             name: indico-web
             port:
               number: 80
-  tls:
-  - hosts:
-    - indico.ai4energy.org
-    secretName: indico-ai4energy-org-certificate-secret
+  # tls:
+  # - hosts:
+  #   - indico.ai4energy.org
+  #   secretName: indico-ai4energy-org-certificate-secret
