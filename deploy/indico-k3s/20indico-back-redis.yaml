@@ -25,7 +25,7 @@ spec:
       - name: redis-data
         hostPath:
           path: /srv/indico/redis
-          type: DirectoryOrCreate
+          type: Directory
 ---
 apiVersion: v1
 kind: Service

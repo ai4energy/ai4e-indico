@@ -30,7 +30,10 @@ spec:
               name: indico-secret
               key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
-          value: "indico"
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: POSTGRES_DB
         - name: POSTGRES_HOST
           valueFrom:
             configMapKeyRef:
@@ -43,7 +46,7 @@ spec:
       - name: postgres-data
         hostPath:
           path: /srv/indico/postgres
-          type: DirectoryOrCreate
+          type: Directory
 
 ---
 apiVersion: v1
