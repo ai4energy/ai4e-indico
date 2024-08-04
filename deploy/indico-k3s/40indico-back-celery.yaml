@@ -17,32 +17,11 @@ spec:
       - name: indico-celery
         image: registry.cn-hangzhou.aliyuncs.com/ai4e/indico-worker:3.3.3
         command: ["/opt/indico/run_celery.sh"]
-        env:
-        - name: POSTGRES_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: indico-config
-              key: POSTGRES_HOST
-        - name: POSTGRES_DB
-          valueFrom:
-            configMapKeyRef:
-              name: indico-config
-              key: POSTGRES_DB
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: indico-web-secret
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: indico-web-secret
-              key: POSTGRES_PASSWORD
-        - name: REDIS_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: indico-config
-              key: REDIS_HOST
+        envFrom:
+        - configMapRef:
+            name: indico-config
+        - secretRef:
+            name: indico-secret
         volumeMounts:
         - mountPath: /opt/indico/archive
           name: archive-volume
