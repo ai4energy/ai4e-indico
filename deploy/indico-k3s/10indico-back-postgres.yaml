@@ -18,27 +18,11 @@ spec:
         image: postgres:16.3
         ports:
         - containerPort: 5432
-        env:
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: indico-secret
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: indico-secret
-              key: POSTGRES_PASSWORD
-        - name: POSTGRES_DB
-          valueFrom:
-            configMapKeyRef:
-              name: indico-config
-              key: POSTGRES_DB
-        - name: POSTGRES_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: indico-config
-              key: POSTGRES_HOST
+        envFrom:
+        - configMapRef:
+            name: indico-config
+        - secretRef:
+            name: indico-secret
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: postgres-data
