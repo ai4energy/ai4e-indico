@@ -61,8 +61,11 @@ services:
       - /srv/indico/nginx.conf.d:/etc/nginx/conf.d
     volumes_from:
       - indico-web
+
+    # 如果不使用nginx-proxy就注释掉上面的environment中的几条，打开下面的2条
     # ports:
     #   - "80:80"
+    
     restart: unless-stopped
 
 networks:
