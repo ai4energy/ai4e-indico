@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indico-redis
+  namespace: indico
 spec:
   replicas: 1
   selector:
@@ -14,14 +15,23 @@ spec:
     spec:
       containers:
       - name: indico-redis
-        image: redis:alpine
+        image: redis:7.4.0
         ports:
         - containerPort: 6379
+        volumeMounts:
+        - mountPath: /data
+          name: redis-data
+      volumes:
+      - name: redis-data
+        hostPath:
+          path: /srv/indico/redis
+          type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: indico-redis
+  namespace: indico
 spec:
   selector:
     app: indico-redis

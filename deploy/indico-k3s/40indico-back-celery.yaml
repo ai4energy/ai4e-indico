@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indico-celery
+  namespace: indico
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: indico-celery
+  template:
+    metadata:
+      labels:
+        app: indico-celery
+    spec:
+      containers:
+      - name: indico-celery
+        image: indico-worker:3.3.3
+        command: ["/opt/indico/run_celery.sh"]
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: indico-web-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: indico-web-secret
+              key: POSTGRES_PASSWORD
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: REDIS_HOST
+        volumeMounts:
+        - mountPath: /opt/indico/archive
+          name: archive-volume
+      volumes:
+      - name: archive-volume
+        hostPath:
+          path: /srv/indico/archive

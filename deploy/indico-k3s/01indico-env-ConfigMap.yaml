@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: indico-config
+  namespace: indico
+data:
+  POSTGRES_HOST: indico-postgres
+  POSTGRES_DB: indico
+  REDIS_HOST: indico-redis

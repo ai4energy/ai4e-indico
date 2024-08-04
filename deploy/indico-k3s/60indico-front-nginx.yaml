@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indico-front-nginx
+  namespace: indico
 spec:
   replicas: 1
   selector:
@@ -14,9 +15,9 @@ spec:
     spec:
       containers:
       - name: indico-front-nginx
-        image: nginx:alpine
+        image: nginx:1.27.0
         ports:
-        - containerPort: 8080
+        - containerPort: 80
         volumeMounts:
         - mountPath: /srv/indico/web/static
           name: static-volume
@@ -25,21 +26,24 @@ spec:
           name: nginx-config
       volumes:
       - name: static-volume
-        persistentVolumeClaim:
-          claimName: static-pvc
+        hostPath:
+          path: /srv/indico/web/static
+          type: DirectoryOrCreate
       - name: nginx-config
         hostPath:
           path: /path/to/nginx.conf
+          type: FileOrCreate
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: indico-front-nginx
+  namespace: indico
 spec:
   selector:
     app: indico-front-nginx
   ports:
   - protocol: TCP
-    port: 8080
-    targetPort: 8080
+    port: 80
+    targetPort: 80
   type: ClusterIP

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: indico-postgres
+  namespace: indico
 spec:
   replicas: 1
   selector:
@@ -19,11 +20,22 @@ spec:
         - containerPort: 5432
         env:
         - name: POSTGRES_USER
-          value: "indico"
+          valueFrom:
+            secretKeyRef:
+              name: indico-secret
+              key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
-          value: "indicopass"
+          valueFrom:
+            secretKeyRef:
+              name: indico-secret
+              key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
           value: "indico"
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: POSTGRES_HOST
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: postgres-data
@@ -31,11 +43,14 @@ spec:
       - name: postgres-data
         hostPath:
           path: /srv/indico/postgres
+          type: DirectoryOrCreate
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: indico-postgres
+  namespace: indico
 spec:
   selector:
     app: indico-postgres

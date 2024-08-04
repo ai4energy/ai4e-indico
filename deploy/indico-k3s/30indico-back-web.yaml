@@ -1,34 +1,50 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: indico-worker
+  name: indico-web
+  namespace: indico
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: indico-worker
+      app: indico-web
   template:
     metadata:
       labels:
-        app: indico-worker
+        app: indico-web
     spec:
       containers:
       - name: indico-web
-        image: getindico/indico:latest
+        image: indico-worker:3.3.3
         command: ["/opt/indico/run_indico.sh"]
         ports:
-        - containerPort: 8000
+        - containerPort: 59999
         env:
         - name: POSTGRES_HOST
-          value: "indico-postgres"
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: POSTGRES_HOST
         - name: POSTGRES_DB
-          value: "indico"
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: POSTGRES_DB
         - name: POSTGRES_USER
-          value: "indico"
+          valueFrom:
+            secretKeyRef:
+              name: indico-web-secret
+              key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
-          value: "indicopass"
+          valueFrom:
+            secretKeyRef:
+              name: indico-web-secret
+              key: POSTGRES_PASSWORD
         - name: REDIS_HOST
-          value: "indico-redis"
+          valueFrom:
+            configMapKeyRef:
+              name: indico-config
+              key: REDIS_HOST
         volumeMounts:
         - mountPath: /opt/indico/archive
           name: archive-volume
@@ -38,23 +54,6 @@ spec:
           name: custom-volume
         - mountPath: /opt/indico/static
           name: static-volume
-      - name: indico-celery
-        image: getindico/indico:latest
-        command: ["/opt/indico/run_celery.sh"]
-        env:
-        - name: POSTGRES_HOST
-          value: "indico-postgres"
-        - name: POSTGRES_DB
-          value: "indico"
-        - name: POSTGRES_USER
-          value: "indico"
-        - name: POSTGRES_PASSWORD
-          value: "indicopass"
-        - name: REDIS_HOST
-          value: "indico-redis"
-        volumeMounts:
-        - mountPath: /opt/indico/archive
-          name: archive-volume
       volumes:
       - name: archive-volume
         hostPath:
@@ -70,14 +69,25 @@ spec:
           path: /srv/indico/static
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  name: indico-web-secret
+  namespace: indico
+type: Opaque
+data:
+  POSTGRES_USER: aW5kaWNv # base64 encoded value for "indico"
+  POSTGRES_PASSWORD: aW5kaWNvcGFzcw== # base64 encoded value for "indicopass"
+---
+apiVersion: v1
 kind: Service
 metadata:
-  name: indico
+  name: indico-web
+  namespace: indico
 spec:
   selector:
-    app: indico-worker
+    app: indico-web
   ports:
   - protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 80
+    targetPort: 59999
   type: ClusterIP
